@@ -36,7 +36,7 @@ python setup.py install
 If you experience problems related to installing the dependency Matplotlib on OSX, please see https://matplotlib.org/faq/osx_framework.html 
 
 ### Intro to our package
-After installing our package locally, try to import CDN in your python environment and learn about package's function. 
+After installing our package locally, try to import scdn in your python environment and learn about package's function. 
 ```
 
 ```
