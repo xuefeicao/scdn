@@ -85,7 +85,7 @@ def pro(file_name, t):
     return np.array(ans) 
 
 
-def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True):
+def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, h_fun=None):
     """
     preprocess the data for CDN analysis, the function is prepared for single subject processing 
 
@@ -101,6 +101,7 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True):
     N: number of basis - 1
     fold: scalar (integral evaluation stepsize = fold*dt)
     precomp: bool (Whether to do precomputation for this subject). This variable is only useful when we do multi-subjects computation. 
+    h_fun: python function, y = x*h_fun, suppose h_fun is known. 
     #x_real: file name of neuronal signal
     #A_real, B_real, C_real: numpy matrices (real parameters) 
     #sim_data: file name of simulated data which is provided for verification of algorithm. If this is provided, other related parameters will be overrided except N.
