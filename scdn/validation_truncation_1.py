@@ -8,46 +8,20 @@ def cross_validation(y, configpara, results):
     """
     select the tuning parameters with validation with only one subjects. 
     """
-    P1 = configpara.P1 
-    P2 = configpara.P2
-    P3 = configpara.P3
-    P4 = configpara.P4
-    P5 = configpara.P5
-    P6 = configpara.P6
-    P7 = configpara.P7 
-    P8 = configpara.P8
-    P9 = configpara.P9
-    P10 = configpara.P10 
-    P11 = configpara.P11
-    P12 = configpara.P12
-    P13 = configpara.P13
-    P14 = configpara.P14
-    P15 = configpara.P15
-    Q1 = configpara.Q1
-    Q2 = configpara.Q2
-    Q3 = configpara.Q3
-    Q4 = configpara.Q4
-    Q1_1 = configpara.Q1_all
+   
     Q2_1 = configpara.Q2_all
-    Q3_1 = configpara.Q3_all
     Q4_1 = configpara.Q4_all 
     n_area = y.shape[0]
-    p = configpara.p
-    t_i_all = configpara.t_i_all
     l_t_all = configpara.l_t_all
     t_i = configpara.t_i
-    l_t = configpara.l_t
     J = configpara.J 
     l_t_0 = configpara.row_n
     l_t_1 = configpara.l_t_1 
     fold = configpara.fold
     t_1 = configpara.t_1
     hrf = configpara.hrf
-    t_U = configpara.t_U
     t_U_1 = configpara.t_U_all
-    n1 = math.floor(t_i[0]/configpara.dt)+1
-    row_n = configpara.row_n
-
+   
     def ode_x(A, B, C, D1, x_pre):
         h = fold*configpara.dt
         x_l = np.zeros((n_area,l_t_all))

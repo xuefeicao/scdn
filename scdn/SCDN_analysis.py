@@ -1,6 +1,6 @@
-from CDN.model_config import Modelconfig, Modelpara
-from CDN.main_computation import update_p, select_lamu 
-from CDN.data_preprocess import data_prepare
+from scdn.model_config import Modelconfig, Modelpara
+from scdn.main_computation import update_p, select_lamu 
+from scdn.data_preprocess import data_prepare
 from functools import partial
 import numpy as np
 import multiprocessing as mp
