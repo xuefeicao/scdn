@@ -384,52 +384,61 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
     lam = lamu[0]
     mu = lamu[1]
     lam_1=lamu[-1]
-    A = np.zeros((n_area,n_area))
-    B = np.zeros((n_area,n_area,J))
-    C = np.zeros((n_area,J))
-    D = np.zeros((n_area,1))
-    iter = 0
-    sum_e = 10**6
-    gamma = ini_select(y, lam_1) 
-    sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, lam_1, p_t=True)[1]
-
-    while(iter<max_iter and abs(sum_e-sum_e_1)/sum_e_1>tol):
-        #gamma_1 = gamma + np.ones((n_area,p))
-        stp = 1
-        while(stp<10 and iter>1):
+    A=np.zeros((n_area,n_area))
+    B=np.zeros((n_area,n_area,J))
+    C=np.zeros((n_area,J))
+    D=np.zeros((n_area,1))
+    iter=1
+    sum_e=10**6
+    gamma,n1,n2=ini_select(lam_1) 
+    sum_e_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
+    t_step=100
+    if config.multi==False:
+        t_step=300
+    while(iter<t_step and abs(sum_e-sum_e_1)>0.005):
+        gamma_1=gamma+np.ones((n_area,p))
+        stp=1
+        while(stp<10 and iter>2):
             results = gr(gamma,A,B,C,D,lam,mu,lam_1)
-            n_results = (np.sum(results**2))
-            gamma_1 = gamma.copy()
-            f_t = 1
-            fixed = likelihood(gamma,A,B,C,D,lam,mu,lam_1)
-            while likelihood(gamma-f_t*results,A,B,C,D,lam,mu,lam_1)>fixed-0.5*f_t*n_results:
-                f_t = 0.8*f_t
-            gamma = gamma-results*f_t
-            stp = stp+1
-
-        if config.B_u == True:
-            tmp = update_all_3(gamma,mu=0)
-            A = tmp[:,0:n_area]
-            for j in range(J):
-                B[:,:,j] = tmp[:,((j+1)*n_area):((j+2)*n_area)]
-            C = tmp[:,((J+1)*n_area):((J+1)*n_area+J)]
-            if config.D_u == True:
-                D = tmp[:,-1].reshape((-1,1))
-        elif config.C_u == True:
-            tmp = update_all_2(gamma,mu=0)
-            A = tmp[:,0:n_area]
-            C = tmp[:,n_area:(n_area+J)]
-            if config.D_u == True:
-                D = tmp[:,-1].reshape((-1,1))
-        else:
-            tmp = update_all_1(gamma,mu=0)
-            A = tmp[:,0:n_area]
-            if config.D_u == True:
-                D = tmp[:,-1].reshape((-1,1))
-        sum_e = sum_e_1
-        sum_e_1 = likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
-        iter += 1
-    e1,e2,plt,plt_1 = likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)
+            n_results=(np.sum(results**2))
+            gamma_1=gamma.copy()
+            f_t=1
+            fixed=likelihood(gamma,A,B,C,D,lam,mu,lam_1)
+            while(likelihood(gamma-f_t*results,A,B,C,D,lam,mu,lam_1)>fixed-0.5*f_t*n_results):
+                f_t=0.8*f_t
+            gamma=gamma-results*f_t
+            stp=stp+1
+            if (n_results**0.5<0.001):
+                break
+        A_1=A.copy()+np.ones((n_area,n_area))
+        B_1=B.copy()
+        C_1=C.copy()
+        stp=1
+        n_stp=100000
+        while((np.sum(abs(A_1-A))+np.sum(abs(B_1-B))+np.sum(abs(C_1-C)))>0.05 and stp<n_stp):
+            A_1=A.copy()
+            B_1=B.copy()
+            C_1=C.copy()
+            if config.D_u==True:
+                D=update_D(gamma,A,B,C)
+            if config.C_u==True:
+                for j in range(J):
+                    C[:,j]=update_C(j,gamma,A,B,C,D,mu_2)
+            for l in range(n_area*(J+1)):
+                n=random.randint(0,n_area*(J+1)-1)
+                i=n % n_area
+                if config.A_u==True:
+                    if n/n_area==0:
+                        A[:,i]=update_A(i,gamma,A,B,C,D,mu)
+                if config.B_u==True:
+                    if n/n_area>0:
+                        B[:,i,n/n_area-1]=update_B(i,n/n_area-1,gamma,A,B,C,D,mu_1)
+            stp=stp+1
+        sum_e=sum_e_1
+        sum_e_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
+        iter=iter+1
+    e1,e2,plt,plt_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)
+        
 
     if multi == False:
         config.gamma = gamma
