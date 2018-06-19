@@ -14,10 +14,10 @@ matplotlib.pyplot.switch_backend('agg')
 import matplotlib.pyplot as plt
 
 
-def CDN_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=[0], lam_1=[0], N=50, fold=0.5, share_stimuli=True, max_iter=100, tol=1e-2, num_cores=1, B_u=True, C_u=True, plot_r=True):
+def scdb_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=[0], lam_1=[0], N=50, fold=0.5, share_stimuli=True, max_iter=100, tol=1e-2, num_cores=1, B_u=True, C_u=True, plot_r=True):
 
     """
-    CDN analysis main function
+    scdn analysis main function
 
     Parameters
     -----------
