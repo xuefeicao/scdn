@@ -4,11 +4,11 @@ In our paper, we do 50 subjects. Here, to illustrate how to use our package, we 
 Data are included in the folder data/
 """
 import sys
-#sys.path.append('../..')
-#from CDN_analysis import CDN_multi_sub
-#from evaluation_1 import eva
-from scdn.scdn_analysis import scdn_multi_sub
-from scdn.evaluation_1 import eva 
+sys.path.append('../scdn/')
+from scdn_analysis import scdn_multi_sub
+from evaluation_1 import eva
+#from scdn.scdn_analysis import scdn_multi_sub
+#from scdn.evaluation_1 import eva 
 
 folder_name = ['Analysis/1/', 'Analysis/2/']
 data_file = ['data/fMRI_1.txt', 'data/fMRI_2.txt']
