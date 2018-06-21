@@ -71,4 +71,4 @@ The test is going to be added in the future.
 This project is licensed under the MIT License - see the LICENSE file for details
 
 [(1)]:http://www.fil.ion.ucl.ac.uk/~karl/Dynamic%20causal%20modelling.pdf
-[(2):]https://pdfs.semanticscholar.org/2127/7ee7b67970782bef59c9d657b144237bacbd.pdf
+[(2)]:https://pdfs.semanticscholar.org/2127/7ee7b67970782bef59c9d657b144237bacbd.pdf
