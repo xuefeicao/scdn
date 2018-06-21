@@ -1,6 +1,6 @@
 # This repo is under development, do not download 
 # Estimating high dimensional ODE models from convoluted observations with an application to fMRI
-scdn is a Python-based package implementing sparse causal dynamic network analysis for convoluted observations, particular for Functional magnetic resonance imaging (fMRI) in our research. It aims to provide a sparse dynamic network estimation not only for fMRI data but for other possible convoluted observations. The introduciton and explaination of parameters and ODE models can be found in [(1)]. 
+scdn is a Python-based package implementing sparse causal dynamic network analysis for convolution model, particular for Functional magnetic resonance imaging (fMRI) in our paper. It aims to provide a sparse dynamic network estimation not only for fMRI data but for other possible data that can well represented by convolution model. The introduciton and explaination of parameters and ODE models can be found in [(1)]. For more details of convolution model, see [(2)]
 
 
 ## Getting Started
@@ -71,3 +71,4 @@ The test is going to be added in the future.
 This project is licensed under the MIT License - see the LICENSE file for details
 
 [(1)]:http://www.fil.ion.ucl.ac.uk/~karl/Dynamic%20causal%20modelling.pdf
+[(2):]https://pdfs.semanticscholar.org/2127/7ee7b67970782bef59c9d657b144237bacbd.pdf
