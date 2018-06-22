@@ -104,9 +104,6 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     h_fun: python function, y = x*h_fun, suppose h_fun is known. Default None and CanonicalHRF will be used in this case.
     t_h: the length of the support (non-zero region) of h_fun, h_fun can be regarded as a smoothing function near every time point, so the nonzero region should 
          not be too large compared to the length of data 
-    #x_real: file name of neuronal signal
-    #A_real, B_real, C_real: numpy matrices (real parameters) 
-    #sim_data: file name of simulated data which is provided for verification of algorithm. If this is provided, other related parameters will be overrided except N.
     
 
     Returns

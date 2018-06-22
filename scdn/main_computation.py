@@ -381,9 +381,11 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
                 num_1=num_1+num[i]
         return num_1
     ############################################################################################
-    lam = lamu[0]
-    mu = lamu[1]
-    lam_1=lamu[-1]
+    lam=lamu[0]
+    mu=lamu[1]
+    mu_1=lamu[2]
+    mu_2=lamu[3]
+    lam_1=lamu[4]
     A=np.zeros((n_area,n_area))
     B=np.zeros((n_area,n_area,J))
     C=np.zeros((n_area,J))
