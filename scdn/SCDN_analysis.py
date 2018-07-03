@@ -14,7 +14,7 @@ matplotlib.pyplot.switch_backend('agg')
 import matplotlib.pyplot as plt
 
 
-def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=[0], mu_1=[1], mu_2=[1]lam_1=[0], N=50, fold=0.5, share_stimuli=True, max_iter=100, tol=1e-2, num_cores=1, B_u=True, C_u=True, plot_r=True, init=True):
+def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=[1], mu_1=[1], mu_2=[1], lam_1=[0], N=50, fold=0.5, share_stimuli=True, max_iter=100, tol=1e-2, num_cores=1, B_u=True, C_u=True, plot_r=True, init=True, h_fun=None):
 
     """
     scdn analysis main function
@@ -59,6 +59,7 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
     B_u, C_u: whether to update B and C in the estimations, bool variables
     plot_r: indicates whether to plot estimated signals, bool variables
     init: boolean variable, indicates whether to use two-step method 
+    h_fun: the function in y = x*h_fun + epsilon 
     Returns
     ----------
     None, results saved in folder
@@ -87,14 +88,15 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
         if not os.path.exists(pickle_file_para):
             os.makedirs(pickle_file_para)
         if share_stimuli and i == ind1:
-            data_prepare(data_file[ind1], stimuli_folder[ind1], pickle_file_data, dt, N, fold, precomp=True)
+            data_prepare(data_file[ind1], stimuli_folder[ind1], pickle_file_data, dt, N, fold, precomp=True, h_fun=h_fun)
             precomp_dir[i] = folder_name[ind1] + 'data/'
             val_precomp_dir = pickle_file_data
         elif share_stimuli:
-            data_prepare(data_file[i], stimuli_folder[i], pickle_file_data, dt, N, fold, precomp=False)
+            data_prepare(data_file[i], stimuli_folder[i], pickle_file_data, dt, N, fold, precomp=False, h_fun=h_fun)
             precomp_dir[i] = folder_name[ind1] + 'data/'
         else:
-            data_prepare(data_file[i], stimuli_folder[i], pickle_file_data, dt, N, fold, precomp=True)
+            data_prepare(data_file[i], stimuli_folder[i], pickle_file_data, dt, N, fold, precomp=True, h_fun=h_fun)
+
             precomp_dir[i] = folder_name[i] + 'data/'
 
     if not val_precomp_dir:
@@ -114,10 +116,10 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
     for i in range(n1):
         if not os.path.exists(folder_name[i]+'results/result.pkl'):
             if init:
-                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam,mu,lam_1], init=True, saved=False)
-                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam,mu,lam_1], init=True, saved=False)
+                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam, mu, mu_1, mu_2, lam_1], init=True, saved=False)
+                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam, mu, mu_1, mu_2, lam_1], init=True, saved=True)
             else:
-                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam,mu,lam_1])
+                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam, mu, mu_1, mu_2, lam_1], init=False, saved=False)
 
 
 

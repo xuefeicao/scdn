@@ -54,9 +54,9 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
     config = Modelconfig(file_name_dir+'data/observed.pkl')
     
     if init:
+        init_dir = precomp_dir[:-5] + 'init/results/result.pkl'
         if saved:
             B_u = True
-            init_dir = precomp_dir[:-5] + 'init/results/result.pkl'
         else:
             B_u = False
         config.B_u = B_u 
@@ -88,9 +88,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
     l_t = configpara.l_t
     J = configpara.J 
     t_T = configpara.t_T 
-    dt = configpara.dt
-    row_n = configpara.row_n
-    fold=configpara.fold
+   
     ###################################################################################
     def gr(gamma, A, B, C, D, lam, mu, mu_1, lam_1):
         g = np.zeros((n_area,p))
@@ -182,6 +180,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
             plt_1 += np.dot(np.dot(gamma[i,:],Omega),gamma[i,:])
         
         sum_e = e1 + lam*e2 + lam*mu*plt1+ lam*mu_1*plt2 + lam*mu_2*plt3 + lam_1*plt_1
+        plt = plt1 + mu_1*1.0/mu*plt2 + mu_2*1.0*plt3
         if p_t == True:
             #print(e1,e2,plt)
             return(e1,e2,plt,plt_1)
@@ -215,8 +214,8 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
     ############################################################################################
     lam = lamu[0]
     mu = lamu[1]
-    mu_1 = lamu[2]
-    mu_2 = lamu[3]
+    mu_1 = lamu[2]*mu
+    mu_2 = lamu[3]*mu 
     lam_1 = lamu[4]
     A = np.zeros((n_area,n_area))
     B = np.zeros((n_area,n_area,J))
@@ -273,14 +272,14 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
                     if n/n_area > 0:
                         B[:,i,n/n_area-1] = update_B(i,n/n_area-1,gamma,A,B,C,D,mu_1)
                     if init and saved:
-                        B[:, i, n/n_area-1] *= B_init
+                        B[:, i, n/n_area-1] *= B_init[:,i]
 
             stp += 1 
         sum_e = sum_e_1
         sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1, p_t=True)[1]
         iter += 1
     e1,e2,plt,plt_1 = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1,p_t=True)
-        
+    print(lamu, lam, mu, mu_1, mu_2, lam_1)
 
     if multi == False:
         config.gamma = gamma
@@ -295,7 +294,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
         config.plt_1 = plt_1
         config.t_i = configpara.t_i
         if init and not saved:
-            pickle_file_1 = file_name_dir + 'init/results/result.pkl'
+            pickle_file_1 = init_dir
         else:
             pickle_file_1 = file_name_dir + 'results/result.pkl'
         f = open(pickle_file_1, 'wb')
@@ -318,12 +317,12 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
         return
     else:
         if init and not saved:
-            pickle_file_1 = file_name_dir + 'init/para/' + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1) + '_' + str_1(mu_2) + '_' + str_1(lam_1) + '.pickle
+            pickle_file_1 = file_name_dir + 'init/para/' + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1) + '_' + str_1(mu_2) + '_' + str_1(lam_1) + '.pickle'
         else:
-            pickle_file_1 = pickle_file + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1) + '_' + str_1(mu_2) + '_' + str_1(lam_1) + '.pickle'
+            pickle_file_1 = pickle_file + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1/mu) + '_' + str_1(mu_2/mu) + '_' + str_1(lam_1) + '.pickle'
         f = open(pickle_file_1, 'wb')
         save = {
-        'result': [lamu,gamma,A,B,C,D,e1,e2,plt,plt_1]
+        'result': [lamu, gamma, A, B, C, D, e1, e2, plt, plt_1]
         }
         pkl.dump(save, f, pkl.HIGHEST_PROTOCOL)
         f.close()
@@ -349,6 +348,10 @@ def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_
     """
     para = list()
     if init and not saved:
+        if not os.path.exists(file_name_dir+'init'):
+            os.makedirs(file_name_dir+'init/para')
+            os.makedirs(file_name_dir+'init/results')
+        pickle_file = file_name_dir+'init/para/'
         mu_1 = [1]
     for i in range(len(lam)):
         for j in range(len(mu)):
@@ -400,9 +403,10 @@ def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_
     else:
         ind = 0
 
-    
+    print('haha', ind)
     config.t_i = configpara.t_i
     config.lamu = results[ind][0]
+    print(config.lamu) 
     config.A = results[ind][2]
     config.B = results[ind][3]
     config.C = results[ind][4]
