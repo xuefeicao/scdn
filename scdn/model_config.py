@@ -88,10 +88,6 @@ class Modelconfig(object):
             else:
                 save = pkl.load(f, encoding='latin1')
         self.y = save['y']
-        #self.A_real = save['A_real']
-        #self.B_real = save['B_real']
-        #self.C_real = save['C_real']
-        #self.x_real = save['x_real']
         self.n_area = self.y.shape[0]
         self.A_u = A_u
         self.B_u = B_u

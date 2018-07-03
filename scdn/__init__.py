@@ -1,5 +1,5 @@
 """
-This package implements CDN analysis of fMRI
+This package implements sparse causal dynamic network analysis for convolution model
 
-Main function: CDN_analysis
+Main function: scdn_analysis
 """

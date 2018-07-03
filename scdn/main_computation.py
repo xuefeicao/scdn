@@ -80,343 +80,158 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
     row_n = configpara.row_n
     fold=configpara.fold
     ###################################################################################
-    def gr(gamma,A,B,C,D,lam,mu,lam_1):
-        g=np.zeros((n_area,p))
-        g=g+np.dot(gamma,P1)-np.dot(np.dot(np.transpose(A),gamma),np.transpose(P2))
-        g=g-np.dot(np.dot(A,gamma),P2)+np.dot(np.dot(np.dot(np.transpose(A),A),gamma),P5)
-        tmp_1=0
-        tmp_2=0
+    def gr(gamma, A, B, C, D, lam, mu, mu_1, lam_1):
+        g = np.zeros((n_area,p))
+        g = g + np.dot(gamma,P1) - np.dot(np.dot(np.transpose(A),gamma),np.transpose(P2))
+        g = g - np.dot(np.dot(A,gamma),P2) + np.dot(np.dot(np.dot(np.transpose(A),A),gamma),P5)
+        tmp_1 = 0
+        tmp_2 = 0
         for j in range(J):
-            tmp_1=tmp_1+np.dot(np.dot(B[:,:,j],gamma),P3[:,:,j])
-            tmp_2=tmp_2+np.dot(np.dot(np.dot(np.transpose(A),B[:,:,j]),gamma),P6[:,:,j])
-        g=g-(tmp_1-tmp_2)
-        g=g-np.dot(C,P4)+np.dot(np.dot(np.transpose(A),C),P7)
-        g=g-np.dot(D,P8)+np.dot(np.dot(np.transpose(A),D),P9)
-        tmp=0
+            tmp_1 = tmp_1+np.dot(np.dot(B[:,:,j],gamma),P3[:,:,j])
+            tmp_2 = tmp_2+np.dot(np.dot(np.dot(np.transpose(A),B[:,:,j]),gamma),P6[:,:,j])
+        g = g-(tmp_1-tmp_2)
+        g = g-np.dot(C,P4)+np.dot(np.dot(np.transpose(A),C),P7)
+        g = g-np.dot(D,P8)+np.dot(np.dot(np.transpose(A),D),P9)
+        tmp = 0
         for l in range(J):
-            tmp_1=0
+            tmp_1 = 0
             for j in range(J):
-                tmp_1=np.dot(np.dot(B[:,:,j],gamma),P10[:,:,j,l])
-            tmp=tmp-np.dot(np.transpose(B[:,:,l]),(np.dot(gamma,np.transpose(P3[:,:,l]))-np.dot(np.dot(A,gamma),np.transpose(P6[:,:,l]))-tmp_1-np.dot(C,P13[:,:,l])-np.dot(D,P11[l,:].reshape((1,-1)))))
-        g=g+tmp
-        g=g*2*lam
-        tmp1=np.zeros((n_area,1))
-        tmp2=np.zeros((n_area,J))
+                tmp_1 = np.dot(np.dot(B[:,:,j],gamma),P10[:,:,j,l])
+            tmp = tmp-np.dot(np.transpose(B[:,:,l]),(np.dot(gamma,np.transpose(P3[:,:,l])) - np.dot(np.dot(A,gamma),np.transpose(P6[:,:,l]))-tmp_1-np.dot(C,P13[:,:,l])-np.dot(D,P11[l,:].reshape((1,-1)))))
+        g = g+tmp
+        g = g*2*lam
+        tmp1 = np.zeros((n_area,1))
+        tmp2 = np.zeros((n_area,J))
 
         for m in range(n_area):
-            tmp1[m,0]=np.sum(abs(A[:,m]))/np.dot(np.dot(gamma[m,:],P5),gamma[m,])**0.5
+            tmp1[m,0] = np.sum(abs(A[:,m]))/np.dot(np.dot(gamma[m,:],P5),gamma[m,])**0.5
             for j in range(J):
-                tmp2[m,j]=np.sum(abs(B[:,m,j]))/np.dot(np.dot(gamma[m,:],P10[:,:,j,j]),gamma[m,:])**0.5
-        g=g+lam*mu*np.dot(gamma,np.transpose(P5))*tmp1
+                tmp2[m,j] = np.sum(abs(B[:,m,j]))/np.dot(np.dot(gamma[m,:],P10[:,:,j,j]),gamma[m,:])**0.5
+        g = g + lam*mu*np.dot(gamma,np.transpose(P5))*tmp1
         for j in range(J):
-            g=g+lam*mu*np.dot(gamma,P10[:,:,j,j])*(tmp2[:,j].reshape((-1,1)))
-        g=g+np.dot((np.dot(gamma,np.transpose(P12))-y),P12)*2
-        g=g+2*lam_1*np.dot(gamma,np.transpose(Omega))
+            g = g + lam*mu_1*np.dot(gamma,P10[:,:,j,j])*(tmp2[:,j].reshape((-1,1)))
+        g = g + np.dot((np.dot(gamma,np.transpose(P12))-y),P12)*2
+        g = g + 2*lam_1*np.dot(gamma,np.transpose(Omega))
         g[np.isnan(g)]=0
         return g 
-    def cd_thre(tmp,tmp_1,mu):
-        #print(abs(tmp),mu*(tmp_1**0.5))
-        mu=mu/2.0
+    def cd_thre(tmp, tmp_1, mu):
+        mu = mu/2.0
         return np.maximum((abs(tmp)-mu*(tmp_1**0.5))/tmp_1,0)*np.sign(tmp)
-    def update_A(n,gamma,A,B,C,D,mu):
-        tmp_0=0
+    def update_A(n, gamma, A, B, C, D, mu):
+        tmp_0 = 0
         for j in range(J):
-            tmp_0=tmp_0+np.dot(np.dot(np.dot(B[:,:,j],gamma),P6[:,:,j]),gamma[n,:])
-        tmp_1=np.dot(np.dot(gamma[n,:],P5),gamma[n,:])
-        tmp=np.dot(gamma,np.dot(gamma[n,:],P2))-np.dot(np.dot(np.dot(A,gamma),P5),gamma[n,:])-tmp_0-np.dot(np.dot(C,P7),gamma[n,:])-D[:,0]*np.dot(gamma[n,:],P9[0,:])+A[:,n]*tmp_1
+            tmp_0 = tmp_0 + np.dot(np.dot(np.dot(B[:,:,j],gamma),P6[:,:,j]),gamma[n,:])
+        tmp_1 = np.dot(np.dot(gamma[n,:],P5),gamma[n,:])
+        tmp = np.dot(gamma,np.dot(gamma[n,:],P2))-np.dot(np.dot(np.dot(A,gamma),P5),gamma[n,:])-tmp_0-np.dot(np.dot(C,P7),gamma[n,:])-D[:,0]*np.dot(gamma[n,:],P9[0,:])+A[:,n]*tmp_1
         return cd_thre(tmp,tmp_1,mu)
-
     def update_B(n,j,gamma,A,B,C,D,mu):
-        tmp_0=0
+        tmp_0 = 0
         for l in range(J):
-            tmp_0=tmp_0+np.dot(np.dot(np.dot(B[:,:,l],gamma),P10[:,:,l,j]),gamma[n,:])
-        tmp_1=np.dot(np.dot(gamma[n,:],P10[:,:,j,j]),gamma[n,:])
-        tmp=np.dot(gamma,np.dot(gamma[n,:],P3[:,:,j]))-np.dot(np.dot(np.dot(A,gamma),np.transpose(P6[:,:,j])),gamma[n,:])-tmp_0-np.dot(np.dot(C,P13[:,:,j]),gamma[n,:])-D[:,0]*np.dot(gamma[n,:],P11[j,:])+B[:,n,j]*tmp_1
+            tmp_0 = tmp_0 + np.dot(np.dot(np.dot(B[:,:,l],gamma),P10[:,:,l,j]),gamma[n,:])
+        tmp_1 = np.dot(np.dot(gamma[n,:],P10[:,:,j,j]),gamma[n,:])
+        tmp = np.dot(gamma,np.dot(gamma[n,:],P3[:,:,j]))-np.dot(np.dot(np.dot(A,gamma),np.transpose(P6[:,:,j])),gamma[n,:])-tmp_0-np.dot(np.dot(C,P13[:,:,j]),gamma[n,:])-D[:,0]*np.dot(gamma[n,:],P11[j,:])+B[:,n,j]*tmp_1
         return cd_thre(tmp,tmp_1,mu)
-
     def update_C(n,gamma,A,B,C,D,mu):
-        tmp_0=0
+        tmp_0 = 0
         for j in range(J):
-            tmp_0=tmp_0+np.dot(np.dot(B[:,:,j],gamma),P13[n,:,j])
-        tmp_1=P14[n,n]
-        tmp=np.dot(gamma,P4[n,:])-np.dot(np.dot(A,gamma),P7[n,:])-tmp_0-np.dot(C,P14[n,:])-D[:,0]*P15[0,n]+C[:,n]*tmp_1
-        return cd_thre(tmp,tmp_1,mu)
-
-    def update_A_0(m,n,gamma,A,B,C,D,mu):
-        tmp_0=0
-        for j in range(J):
-            tmp_0=tmp_0+np.dot(np.dot(np.dot(B[m,:,j],gamma),P6[:,:,j]),gamma[n,:])
-        tmp_1=np.dot(np.dot(gamma[n,:],P5),gamma[n,:])
-        tmp=np.dot(np.dot(gamma[n,:],P2),gamma[m,:])-np.dot(np.dot(np.dot(A[m,:],gamma),P5),gamma[n,:])-tmp_0-np.dot(np.dot(C[m,:],P7),gamma[n,:])-D[m,0]*np.dot(gamma[n,:],P9[0,:])+A[m,n]*tmp_1
-        return cd_thre(tmp,tmp_1,mu)
-    def update_B_0(m,n,j,gamma,A,B,C,D,mu):
-        tmp_0=0
-        for l in range(J):
-            tmp_0=tmp_0+np.dot(np.dot(np.dot(B[m,:,l],gamma),P10[:,:,l,j]),gamma[n,:])
-        tmp_1=np.dot(np.dot(gamma[n,:],P10[:,:,j,j]),gamma[n,:])
-        tmp=np.dot(np.dot(gamma[n,:],P3[:,:,j]),gamma[m,:])-np.dot(np.dot(np.dot(A[m,:],gamma),np.transpose(P6[:,:,j])),gamma[n,:])-tmp_0-np.dot(np.dot(C[m,:],P13[:,:,j]),gamma[n,:])-D[m,0]*np.dot(gamma[n,:],P11[j,:])+B[m,n,j]*tmp_1
-        return cd_thre(tmp,tmp_1,mu)
-    def update_C_0(m,n,gamma,A,B,C,D,mu):
-        tmp_0=0
-        for j in range(J):
-            tmp_0=tmp_0+np.dot(np.dot(B[m,:,j],gamma),P13[n,:,j])
-        tmp_1=P14[n,n]
-        tmp=np.dot(gamma[m,:],P4[n,:])-np.dot(np.dot(A[m,:],gamma),P7[n,:])-tmp_0-np.dot(C[m,:],P14[n,:])-D[m,0]*P15[0,n]+C[m,n]*tmp_1
+            tmp_0 = tmp_0+np.dot(np.dot(B[:,:,j],gamma),P13[n,:,j])
+        tmp_1 = P14[n,n]
+        tmp = np.dot(gamma,P4[n,:])-np.dot(np.dot(A,gamma),P7[n,:])-tmp_0-np.dot(C,P14[n,:])-D[:,0]*P15[0,n]+C[:,n]*tmp_1
         return cd_thre(tmp,tmp_1,mu)
     def update_D(gamma,A,B,C):
-        tmp=np.dot(gamma,np.transpose(P8))-np.dot(np.dot(A,gamma),np.transpose(P9))
+        tmp = np.dot(gamma,np.transpose(P8))-np.dot(np.dot(A,gamma),np.transpose(P9))
         for j in range(J):
-            tmp=tmp-np.dot(np.dot(B[:,:,j],gamma),P11[j,:]).reshape((-1,1))
-        tmp=tmp-np.dot(C,np.transpose(P15))
+            tmp = tmp-np.dot(np.dot(B[:,:,j],gamma),P11[j,:]).reshape((-1,1))
+        tmp = tmp - np.dot(C,np.transpose(P15))
         return tmp*1.0/t_T
-    def likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=False):
-        e1=np.sum((y-np.dot(gamma,np.transpose(P12)))**2)
-        e2=0
+    def likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1, p_t=False):
+        e1 = np.sum((y-np.dot(gamma,np.transpose(P12)))**2)
+        e2 = 0
         tmp_0=0
         for j in range(J):
-            tmp_0=tmp_0+np.dot(np.dot(B[:,:,j],gamma),Q3[:,:,j])
-        tmp=np.dot(gamma,Q1)-np.dot(np.dot(A,gamma),Q2)-tmp_0-np.dot(C,Q4)-np.repeat(D,l_t,axis=1) 
+            tmp_0 = tmp_0 + np.dot(np.dot(B[:,:,j],gamma),Q3[:,:,j])
+        tmp = np.dot(gamma,Q1)-np.dot(np.dot(A,gamma),Q2)-tmp_0-np.dot(C,Q4)-np.repeat(D,l_t,axis=1) 
         for m in range(n_area):
-            e2=e2+simps(tmp[m,:]**2,t_i)
-        plt=0
+            e2 = e2 + simps(tmp[m,:]**2,t_i)
+        plt1 = 0
+        plt2 = 0
+        plt3 = 0 
         for k in range(n_area):
-            w_1k=np.dot(np.dot(gamma[k,:],P5),gamma[k,:])**0.5
-            plt=plt+np.sum(abs(A[:,k]))*w_1k
+            w_1k = np.dot(np.dot(gamma[k,:],P5),gamma[k,:])**0.5
+            plt1 += np.sum(abs(A[:,k]))*w_1k
             for j in range(J):
-                w_2kj=np.dot(np.dot(gamma[k,:],P10[:,:,j,j]),gamma[k,:])**0.5
-                plt=plt+np.sum(abs(B[:,k,j]))*w_2kj
+                w_2kj = np.dot(np.dot(gamma[k,:],P10[:,:,j,j]),gamma[k,:])**0.5
+                plt2 += plt2 + np.sum(abs(B[:,k,j]))*w_2kj
         for k in range(J):
-            w_3k=(P14[k,k])**0.5
-            plt=plt+np.sum(abs(C[:,k]))*w_3k
-        plt_1=0
+            w_3k = (P14[k,k])**0.5
+            plt3 += np.sum(abs(C[:,k]))*w_3k
+        plt_1 = 0
         for i in range(n_area):
-            plt_1=plt_1+np.dot(np.dot(gamma[i,:],Omega),gamma[i,:])
+            plt_1 += np.dot(np.dot(gamma[i,:],Omega),gamma[i,:])
         
-        sum_e=e1+lam*e2+lam*mu*plt+lam_1*plt_1
-        if p_t==True:
+        sum_e = e1 + lam*e2 + lam*mu*plt1+ lam*mu_1*plt2 + lam*mu_2*plt3 + lam_1*plt_1
+        if p_t == True:
             #print(e1,e2,plt)
             return(e1,e2,plt,plt_1)
         return sum_e
-    def update_all_3(gamma,mu):
-        n_all=n_area*(J+1)+J+1
-        Y_tmp=np.zeros((n_area,n_all))
-        X_tmp=np.zeros((n_all,n_all))
-        I_tmp=np.zeros((n_all,n_all))
-        W_A=np.zeros((n_area,n_area))
-        for i in range(n_area):
-             W_A[i,i]=np.dot(np.dot(gamma[i,:],P5),np.transpose(gamma[i,:]))
-        I_tmp[0:n_area,0:n_area]=W_A
-        W_B=np.zeros((n_area,n_area,J))
-        for j in range(J):
-            for i in range(n_area):
-                W_B[i,i,j]=np.dot(np.dot(gamma[i,:],P10[:,:,j,j]),np.transpose(gamma[i,:]))
-            I_tmp[((j+1)*n_area):((j+2)*n_area),((j+1)*n_area):((j+2)*n_area)]=W_B[:,:,j]
-        W_C=np.zeros((J,J))
-        for j in range(J):
-            W_C[j,j]=P14[j,j]
-        I_tmp[((J+1)*n_area):((J+1)*n_area+J),((J+1)*n_area):((J+1)*n_area+J)]=W_C
-        for j in range(J+1):
-            if j==0:
-                Y_tmp[:,j*n_area:((j+1)*n_area)]=np.dot(np.dot(gamma,np.transpose(P2)),np.transpose(gamma))
-            else:
-                Y_tmp[:,j*n_area:((j+1)*n_area)]=np.dot(np.dot(gamma,np.transpose(P3[:,:,j-1])),np.transpose(gamma))
-        Y_tmp[:,((J+1)*n_area):((J+1)*n_area+J)]= np.dot(gamma,np.transpose(P4))
-        Y_tmp[:,-1]=np.dot(gamma,np.transpose(P8)).reshape((-1,))
-        for j in range(J+1):
-            if j==0:
-                X_tmp[j*n_area:((j+1)*n_area),0:n_area]=np.dot(np.dot(gamma,P5),np.transpose(gamma))
-            else:
-                X_tmp[j*n_area:((j+1)*n_area),0:n_area]=np.dot(np.dot(gamma,P6[:,:,j-1]),np.transpose(gamma))
-        X_tmp[((J+1)*n_area):((J+1)*n_area+J),0:n_area]= np.dot(P7,np.transpose(gamma))
-        X_tmp[-1,0:n_area]=np.dot(P9,np.transpose(gamma))
-        tmp=np.zeros((n_area*J,n_area*J))
-        for j in range(J):
-            for l in range(J):
-                tmp[j*n_area:(j+1)*n_area,l*n_area:(l+1)*n_area]=np.dot(np.dot(gamma,P10[:,:,j,l]),np.transpose(gamma))
-        for j in range(J):
-            X_tmp[0:n_area,((j+1)*n_area):((j+2)*n_area)]=np.dot(np.dot(gamma,np.transpose(P6[:,:,j])),np.transpose(gamma))
-            X_tmp[(J+1)*n_area:(J+1)*n_area+J,((j+1)*n_area):((j+2)*n_area)]=np.dot(P13[:,:,j],np.transpose(gamma))
-            X_tmp[-1,((j+1)*n_area):((j+2)*n_area)]=np.dot(P11[j,:].reshape((1,-1)),np.transpose(gamma))
-        X_tmp[n_area:(J+1)*n_area,n_area:(J+1)*n_area]=tmp
-        ##C
-        X_tmp[0:n_area,(J+1)*n_area:((J+1)*n_area+J)]=np.dot(gamma,np.transpose(P7))
-        for j in range(J):
-            X_tmp[n_area*(j+1):n_area*(j+2),(J+1)*n_area:((J+1)*n_area+J)]=np.dot(gamma,np.transpose(P13[:,:,j]))
-        X_tmp[(J+1)*n_area:((J+1)*n_area+J),(J+1)*n_area:((J+1)*n_area+J)]=P14
-        X_tmp[-1,(J+1)*n_area:((J+1)*n_area+J)]=P15
-        ##D
-        X_tmp[0:n_area,-1]=np.dot(gamma,np.transpose(P9)).reshape((-1))
-        for j in range(J):
-            X_tmp[n_area*(j+1):n_area*(j+2),-1]=np.dot(gamma,np.transpose(P11[j,:])).reshape((-1))
-        X_tmp[(J+1)*n_area:((J+1)*n_area+J),-1]=np.transpose(P15).reshape((-1))
-        X_tmp[-1,-1]=t_T 
-        s_eig=np.sort(abs(np.linalg.eig(X_tmp)[0]))
-        #print np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0]
-        if config.D_u==False:
-            Y_tmp=Y_tmp[:,0:-1]
-            X_tmp=X_tmp[0:-1,0:-1]
-            I_tmp=I_tmp[0:-1,0:-1]
-            return np.dot(Y_tmp,np.linalg.pinv(X_tmp+mu*I_tmp))
-        return np.dot(Y_tmp,np.linalg.pinv(X_tmp+mu*I_tmp))
-
-    def update_all_2(gamma,mu):
-        n_all=n_area+J+1
-        Y_tmp=np.zeros((n_area,n_all))
-        X_tmp=np.zeros((n_all,n_all))
-        I_tmp=np.zeros((n_all,n_all))
-        W_A=np.zeros((n_area,n_area))
-        for i in range(n_area):
-             W_A[i,i]=np.dot(np.dot(gamma[i,:],P5),np.transpose(gamma[i,:]))
-        I_tmp[0:n_area,0:n_area]=W_A
-        W_C=np.zeros((J,J))
-        for j in range(J):
-            W_C[j,j]=P14[j,j]
-        I_tmp[((1)*n_area):((1)*n_area+J),((1)*n_area):((1)*n_area+J)]=W_C
-        Y_tmp[:,0:n_area]=np.dot(np.dot(gamma,np.transpose(P2)),np.transpose(gamma))
-        Y_tmp[:,((1)*n_area):((1)*n_area+J)]= np.dot(gamma,np.transpose(P4))
-        Y_tmp[:,-1]=np.dot(gamma,np.transpose(P8)).reshape((-1,))
-        X_tmp[0:n_area,0:n_area]=np.dot(np.dot(gamma,P5),np.transpose(gamma))
-        X_tmp[((1)*n_area):((1)*n_area+J),0:n_area]= np.dot(P7,np.transpose(gamma))
-        X_tmp[-1,0:n_area]=np.dot(P9,np.transpose(gamma))
-        ##C
-        X_tmp[0:n_area,n_area:(n_area+J)]=np.dot(gamma,np.transpose(P7))
-        X_tmp[n_area:(n_area+J),n_area:(n_area+J)]=P14
-        X_tmp[-1, n_area: (n_area+J)]=P15
-        ##D
-        X_tmp[0:n_area,-1]=np.dot(gamma,np.transpose(P9)).reshape((-1))
-        X_tmp[n_area:(n_area+J),-1]=np.transpose(P15).reshape((-1))
-        X_tmp[-1,-1]=t_T 
-        s_eig=np.sort(abs(np.linalg.eig(X_tmp)[0]))
-        if config.D_u==False:
-            Y_tmp=Y_tmp[:,0:-1]
-            X_tmp=X_tmp[0:-1,0:-1]
-            I_tmp=I_tmp[0:-1,0:-1]
-            return np.dot(Y_tmp,np.linalg.pinv(X_tmp+mu*I_tmp))
-        return np.dot(Y_tmp,np.linalg.pinv(X_tmp+mu*I_tmp))
-
-    def update_all_1(gamma,mu):
-        n_all=n_area+1
-        Y_tmp=np.zeros((n_area,n_all))
-        X_tmp=np.zeros((n_all,n_all))
-        I_tmp=np.zeros((n_all,n_all))
-        W_A=np.zeros((n_area,n_area))
-        for i in range(n_area):
-             W_A[i,i]=np.dot(np.dot(gamma[i,:],P5),np.transpose(gamma[i,:]))
-        I_tmp[0:n_area,0:n_area]=W_A
-  
-        Y_tmp[:,0:n_area]=np.dot(np.dot(gamma,np.transpose(P2)),np.transpose(gamma))
-  
-        Y_tmp[:,-1]=np.dot(gamma,np.transpose(P8)).reshape((-1,))
-
-
-        X_tmp[0:n_area,0:n_area]=np.dot(np.dot(gamma,P5),np.transpose(gamma))
-      
-        X_tmp[-1,0:n_area]=np.dot(P9,np.transpose(gamma))
-        ##D
-        X_tmp[0:n_area,-1]=np.dot(gamma,np.transpose(P9)).reshape((-1))
-        X_tmp[-1,-1]=t_T 
-        s_eig=np.sort(abs(np.linalg.eig(X_tmp)[0]))
-        #print np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0]
-        if config.D_u==False:
-            Y_tmp=Y_tmp[:,0:-1]
-            X_tmp=X_tmp[0:-1,0:-1]
-            I_tmp=I_tmp[0:-1,0:-1]
-            return np.dot(Y_tmp,np.linalg.pinv(X_tmp+mu*I_tmp))
-        return np.dot(Y_tmp,np.linalg.pinv(X_tmp+mu*I_tmp))
 
 
     #######################################################################################
     ##############################################################################################
-    def error_ws_0(gamma_ini,lam_1):
-        e1=np.sum((y-np.dot(gamma_ini,np.transpose(P12)))**2)
-        plt_1=0
-        for i in range(n_area):
-            plt_1=plt_1+np.dot(np.dot(gamma_ini[i,:],Omega),gamma_ini[i,:])
-        return e1+lam_1*plt_1
+    def ini_select(y, lam_1, P12=P12, Omega=Omega):
+        """
+        selecting an initial for gamma which may help to avoid local minimum
+        Parameters
+        ------------- 
+        lam_1: scalar, penalty for the second derivative of neuronal activities x. 
+        """
+        gamma_0 = np.zeros((n_area,p))
+        gamma_0 = error_ws(y, gamma_0, lam_1, P12, Omega)
+        return gamma_0 
     
-    def error_ws(gamma_ini,lam_1):
-        stp=1
-        while(stp<1000):
-            gr=np.dot((np.dot(gamma_ini,np.transpose(P12))-y),P12)*2+2*lam_1*np.dot(gamma_ini,np.transpose(Omega))
-            n_gr=(np.sum(gr**2))
-            f_t=1
-            fixed=error_ws_0(gamma_ini,lam_1)
-            while(error_ws_0(gamma_ini-f_t*gr,lam_1)>fixed-0.5*f_t*n_gr):
-                f_t=0.8*f_t
-            gamma_ini=gamma_ini-gr*f_t
-            stp=stp+1
-            if n_gr**0.5<0.001:
-                break
-        return gamma_ini
-
-    def ini_select(lam_1):
-        gamma_0=np.zeros((n_area,p))
-        gamma_0=error_ws(gamma_0,lam_1)
-        return gamma_0,0,0
-        t_tmp=np.arange(0,dt*(row_n-1)+dt*fold*0.5,dt)
-        Q2_tmp=Q2[:,0:(Q2.shape[1]+1):int(1/fold)]
-        Q4_tmp=Q4[:,0:(Q4.shape[1]+1):int(1/fold)]
-        x_tmp=np.dot(gamma_0,Q2_tmp)
-        n_tmp=x_tmp.shape[1]-np.where(np.amax(abs(Q4_tmp),axis=0)>0)[0][-1]
-        n_tmp_1=np.where(np.amax(abs(Q4_tmp),axis=0)>0)[0][0]
-        m_tmp=int(n_tmp*p/row_n)
-        m_tmp_1=int(n_tmp_1*p/row_n)
-        for i in range(x_tmp.shape[0]):
-            model=np.polyfit(t_tmp[-20:-10],x_tmp[i,-20:-10],1)
-            p_tmp=np.polyval(model,t_tmp[-10:])
-            x_tmp[i,-10:]=p_tmp
-        gamma_0=np.transpose(np.dot(np.dot(np.linalg.inv(np.dot(Q2_tmp,np.transpose(Q2_tmp))),Q2_tmp),np.transpose(x_tmp)))
-        gamma_0[:,-1]=np.sign(gamma_0[:,-1])*np.minimum(np.amax(abs(gamma_0[:,0:(p-1)]),axis=1),abs(gamma_0[:,-1]))
-       
-        return gamma_0,m_tmp,m_tmp_1
     def str_1(num):
-        if num>=1 and (num/1-int(num))<1e-5:
+        if num >= 1 and (num/1-int(num))<1e-5:
             return str(int(num))
-        elif num>=1:
+        elif num >= 1:
             return str(num)
-        num=str(num)
-        num_1=''
+        num = str(num)
+        num_1 = ''
         for i in range(len(num)):
-            if num[i]!='.':
-                num_1=num_1+num[i]
+            if num[i] != '.':
+                num_1 = num_1 + num[i]
         return num_1
     ############################################################################################
-    lam=lamu[0]
-    mu=lamu[1]
-    mu_1=lamu[2]
-    mu_2=lamu[3]
-    lam_1=lamu[4]
-    A=np.zeros((n_area,n_area))
-    B=np.zeros((n_area,n_area,J))
-    C=np.zeros((n_area,J))
-    D=np.zeros((n_area,1))
-    iter=1
-    sum_e=10**6
-    gamma,n1,n2=ini_select(lam_1) 
-    sum_e_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
-    t_step=100
-    if config.multi==False:
-        t_step=300
-    while(iter<t_step and abs(sum_e-sum_e_1)>0.005):
-        gamma_1=gamma+np.ones((n_area,p))
+    lam = lamu[0]
+    mu = lamu[1]
+    mu_1 = lamu[2]
+    mu_2 = lamu[3]
+    lam_1 = lamu[4]
+    A = np.zeros((n_area,n_area))
+    B = np.zeros((n_area,n_area,J))
+    C = np.zeros((n_area,J))
+    D = np.zeros((n_area,1))
+    iter = 0
+    sum_e = 10**6
+    gamma = ini_select(y, lam_1) 
+    sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1, p_t=True)[1]
+    while(iter < max_iter and abs(sum_e-sum_e_1)/sum_e_1 > tol):
         stp=1
         while(stp<10 and iter>2):
-            results = gr(gamma,A,B,C,D,lam,mu,lam_1)
-            n_results=(np.sum(results**2))
-            gamma_1=gamma.copy()
-            f_t=1
-            fixed=likelihood(gamma,A,B,C,D,lam,mu,lam_1)
-            while(likelihood(gamma-f_t*results,A,B,C,D,lam,mu,lam_1)>fixed-0.5*f_t*n_results):
+            results = gr(gamma, A, B, C, D, lam, mu, mu_1, lam_1)
+            n_results = (np.sum(results**2))
+            f_t = 1
+            fixed = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1)
+            while(likelihood(gamma-f_t*results, A, B, C, D, lam, mu, mu_1, mu_2, lam_1) > fixed - 0.5*f_t*n_results):
                 f_t=0.8*f_t
-            gamma=gamma-results*f_t
+            gamma = gamma - results*f_t
             stp=stp+1
-            if (n_results**0.5<0.001):
+            if (n_results**0.5 < 0.001):
                 break
-        A_1=A.copy()+np.ones((n_area,n_area))
-        B_1=B.copy()
-        C_1=C.copy()
-        stp=1
-        n_stp=100000
+        A_1 = A.copy()+np.ones((n_area,n_area))
+        B_1 = B.copy()
+        C_1 = C.copy()
+        stp = 1
+        n_stp = 100000
         while((np.sum(abs(A_1-A))+np.sum(abs(B_1-B))+np.sum(abs(C_1-C)))>0.05 and stp<n_stp):
             A_1=A.copy()
             B_1=B.copy()
@@ -435,11 +250,11 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
                 if config.B_u==True:
                     if n/n_area>0:
                         B[:,i,n/n_area-1]=update_B(i,n/n_area-1,gamma,A,B,C,D,mu_1)
-            stp=stp+1
-        sum_e=sum_e_1
-        sum_e_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
-        iter=iter+1
-    e1,e2,plt,plt_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)
+            stp += 1 
+        sum_e = sum_e_1
+        sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1, p_t=True)[1]
+        iter += 1
+    e1,e2,plt,plt_1 = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1,p_t=True)
         
 
     if multi == False:
@@ -460,16 +275,11 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         'estimated_x': np.dot(config.gamma,configpara.Q2_all),
         'y': config.y, 
         'estimated_y': np.dot(config.gamma,np.transpose(P12)), 
-        #'x_real': config.x_real, 
         'gamma': config.gamma,
         'A': config.A,
         'B': config.B,
         'C': config.C,
         'D':config.D,
-        #'A_real': config.A_real,
-        #'B_real': config.B_real,
-        #'C_real': config.C_real,
-        #'D_real': config.D_real,
         'lamu': config.lamu, 
         'e1': config.e1, 'e2': config.e2, 'plt_1': config.plt_1, 'plt': config.plt,
         't': np.arange(0,configpara.dt*(configpara.row_n-1)+configpara.dt**0.5,configpara.dt),
@@ -479,7 +289,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         f.close()
         return
     else:
-        pickle_file_1 = pickle_file + str_1(lam)+'_'+str_1(mu*lam) + '_' + str_1(lam_1)+'.pickle'
+        pickle_file_1 = pickle_file + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1) + '_' + str_1(mu_2) + '_' + str_1(lam_1) + '.pickle'
         f = open(pickle_file_1, 'wb')
         save = {
         'result': [lamu,gamma,A,B,C,D,e1,e2,plt,plt_1]
@@ -493,7 +303,7 @@ def str_2(num):
     else:
         return float(num)
     
-def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_data_dir=None, val_precomp_dir=None, num_cores=1, tol=1e-2, max_iter=100):
+def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_dir, val_data_dir=None, val_precomp_dir=None, num_cores=1, tol=1e-2, max_iter=100):
     """
     wrapper for selecting the tuning parameters of one subject
     See function update_p for details of variables meaning
@@ -510,8 +320,10 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
    
     for i in range(len(lam)):
         for j in range(len(mu)):
-            for k in range(len(lam_1)):
-                para.append((lam[i], lam[i]*mu[j], lam_1[k]))
+            for l in range(len(mu_1)):
+                for m in range(len(mu_2)):
+                    for k in range(len(lam_1)):
+                        para.append((lam[i], mu[j], mu_1[l], mu_2[m], lam_1[k]))
     if len(para) >= 1:
         if num_cores > 1:
             pool = mp.Pool(processes=min(len(para), num_cores))
@@ -573,16 +385,11 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
     'estimated_x': np.dot(config.gamma, Q2[:,0:(Q2.shape[1]+1):int(1/fold)]),
     'y': config.y, 
     'estimated_y': np.dot(config.gamma,np.transpose(configpara.P12)), 
-    #'x_real': config.x_real, 
     'gamma': config.gamma,
     'A': config.A,
     'B': config.B,
     'C': config.C,
     'D':config.D,
-    #'A_real': config.A_real,
-    #'B_real': config.B_real,
-    #'C_real': config.C_real,
-    #'D_real': config.D_real,
     'lamu': config.lamu, 
     'e1': config.e1, 'e2': config.e2, 'plt_1': config.plt_1, 'plt': config.plt,
     't': np.arange(0,configpara.dt*(configpara.row_n-1)+configpara.dt*0.5,configpara.dt),
