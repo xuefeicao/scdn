@@ -42,7 +42,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
     file_name_dir: dir of problem folder
     precomp_dir: dir of precomputed data
     pickle_file: file name which we use to save estimations
-    lamu: list = [lam, mu, mu_1, mu_2, lam_1], in our paper, lam*mu, lam*mu_1, lam*mu_2 is the coefficient 
+    lamu: list = [lam, mu, mu_1, mu_2, lam_1], in our paper, lam*mu, lam*mu_1*mu, lam*mu_2*mu is the coefficient 
           for l1 norm penalty of A, B, C. lam_1 is the penalty for the second dirivative of estimated neural activities. 
     tol, max_iter:
     multi: boolean variable, Default True
@@ -348,7 +348,8 @@ def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_
     instance of Modelconfig, including all summaries of estimation for one subject
     """
     para = list()
-   
+    if init and not saved:
+        mu_1 = [1]
     for i in range(len(lam)):
         for j in range(len(mu)):
             for l in range(len(mu_1)):

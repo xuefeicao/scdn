@@ -14,7 +14,7 @@ matplotlib.pyplot.switch_backend('agg')
 import matplotlib.pyplot as plt
 
 
-def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=[0], lam_1=[0], N=50, fold=0.5, share_stimuli=True, max_iter=100, tol=1e-2, num_cores=1, B_u=True, C_u=True, plot_r=True):
+def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=[0], mu_1=[1], mu_2=[1]lam_1=[0], N=50, fold=0.5, share_stimuli=True, max_iter=100, tol=1e-2, num_cores=1, B_u=True, C_u=True, plot_r=True, init=True):
 
     """
     scdn analysis main function
@@ -27,6 +27,16 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
                                        / data: save all data files 
                                        / para: save results for tuning 
                                        / results: save all results with pictures 
+                 if init == True, i.e two step method used
+                 for each folder_name
+                                       / data: save all data files 
+                                       / init:
+                                            / para: save results for tuning 
+                                            / results: save all results with pictures 
+                                        / para: save results for tuning 
+                                        / results: save all results with pictures 
+                                        
+                                       
     data_file: list of files name, BOLD signal for corresponding subject
     stimuli_folder: list of stimuli foders for all subject
                     if the subjects share the same stimuli, let every entry of stimuli_folder be the same
@@ -34,8 +44,9 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
               data_file[0] to compute the different estimations for all tuning parameters and based on data_file[1] to select
               tuning parameters.  
     dt: TR of fMRI data
-    lam, mu, lam_1: tuning parameters, lam*mu is the l2 penalty for the parameters. lam_1 is the penalty for the second derivative of
-                    x (neuronal activities) which is commonly used in Functional Data Analysis
+    lam, mu, mu_1, mu_2, lam_1: tuning parameters, lam*mu, lam*mu_1*mu, lam*mu_2*mu is the coefficient 
+          for l1 norm penalty of A, B, C.
+          lam_1 is the penalty for the second derivative of x (neuronal activities) which is commonly used in Functional Data Analysis
     N: num of basis - 1, 
     fold: scalar (integral evaluation stepsize = fold*dt)
     x_real, A_real, B_real, C_real: the real parameters which are used to verify simulations 
@@ -47,7 +58,7 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
     num_cores: int, number of cores for parallel computing 
     B_u, C_u: whether to update B and C in the estimations, bool variables
     plot_r: indicates whether to plot estimated signals, bool variables
-
+    init: boolean variable, indicates whether to use two-step method 
     Returns
     ----------
     None, results saved in folder
@@ -89,15 +100,26 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
     if not val_precomp_dir:
         val_precomp_dir = folder_name[ind2] + 'data/'
     val_data_dir = folder_name[ind2] + 'data/'
-    
-    config = select_lamu(lam, mu, lam_1, folder_name[ind1], folder_name[ind1] +'para/', precomp_dir[ind1], val_data_dir, val_precomp_dir, num_cores=num_cores, tol=tol, max_iter=max_iter)   
-    lam, mu, lam_1 = config.lamu
+    if init:
+        select_lamu(lam, mu, mu_1, mu_2, lam_1, folder_name[ind1], folder_name[ind1] +'para/', precomp_dir[ind1], val_data_dir, val_precomp_dir, num_cores=num_cores, tol=tol, max_iter=max_iter, init=True, saved=False)
+        config = select_lamu(lam, mu, mu_1, mu_2, lam_1, folder_name[ind1], folder_name[ind1] +'para/', precomp_dir[ind1], val_data_dir, val_precomp_dir, num_cores=num_cores, tol=tol, max_iter=max_iter, init=True, saved=True)
+    else:
+        config = select_lamu(lam, mu, mu_1, mu_2, lam_1, folder_name[ind1], folder_name[ind1] +'para/', precomp_dir[ind1], val_data_dir, val_precomp_dir, num_cores=num_cores, tol=tol, max_iter=max_iter)
+
+
+    lam, mu, mu_1, mu_2, lam_1 = config.lamu
 
     # to be done: parallel 
 
     for i in range(n1):
         if not os.path.exists(folder_name[i]+'results/result.pkl'):
-            update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam,mu,lam_1])
+            if init:
+                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam,mu,lam_1], init=True, saved=False)
+                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam,mu,lam_1], init=True, saved=False)
+            else:
+                update_p(folder_name[i], precomp_dir=precomp_dir[i], pickle_file=None, tol=tol, max_iter=max_iter, multi=False, lamu=[lam,mu,lam_1])
+
+
 
     
     # plot the results
