@@ -33,7 +33,7 @@ def error_ws(y, gamma_ini, lam_1, P12, Omega):
         if n_gr**0.5<0.001:
             break
     return gamma_ini
-def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lamu):
+def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, init, saved, lamu):
     """
     main algorithm, updating parameter for a defined problem
 
@@ -41,14 +41,26 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
     -----------
     file_name_dir: dir of problem folder
     precomp_dir: dir of precomputed data
-    pickele_file: file name which we use to save estimations
-    lamu: list = [lam, mu, lam_1], in our paper, mu is set to be zero. lam*mu is the coefficient 
-          for l2 norm penalty of A, B, C
+    pickle_file: file name which we use to save estimations
+    lamu: list = [lam, mu, mu_1, mu_2, lam_1], in our paper, lam*mu, lam*mu_1, lam*mu_2 is the coefficient 
+          for l1 norm penalty of A, B, C. lam_1 is the penalty for the second dirivative of estimated neural activities. 
     tol, max_iter:
-    multi: bool variable, Default True
+    multi: boolean variable, Default True
+    init: boolean variable, whether to use two-step method
+    saved: boolean variable, whether the initial value for two-step method has been saved
+
     """
     configpara = Modelpara(precomp_dir+'precomp.pkl')
     config = Modelconfig(file_name_dir+'data/observed.pkl')
+    
+    if init:
+        if saved:
+            B_u = True
+            init_dir = precomp_dir[:-5] + 'init/results/result.pkl'
+        else:
+            B_u = False
+        config.B_u = B_u 
+
     P1 = configpara.P1 
     P2 = configpara.P2
     P3 = configpara.P3
@@ -214,6 +226,16 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
     sum_e = 10**6
     gamma = ini_select(y, lam_1) 
     sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1, p_t=True)[1]
+    if init and saved:
+        print('start using init value')
+        with open(init_dir, 'rb') as f:
+            if six.PY2:
+                save = pkl.load(f)
+            else:
+                save = pkl.load(f, encoding='latin1')
+            B_init = (abs(save['A']) > 1e-6)
+
+
     while(iter < max_iter and abs(sum_e-sum_e_1)/sum_e_1 > tol):
         stp=1
         while(stp<10 and iter>2):
@@ -232,24 +254,27 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         C_1 = C.copy()
         stp = 1
         n_stp = 100000
-        while((np.sum(abs(A_1-A))+np.sum(abs(B_1-B))+np.sum(abs(C_1-C)))>0.05 and stp<n_stp):
-            A_1=A.copy()
-            B_1=B.copy()
-            C_1=C.copy()
-            if config.D_u==True:
-                D=update_D(gamma,A,B,C)
-            if config.C_u==True:
+        while((np.sum(abs(A_1-A))+np.sum(abs(B_1-B))+np.sum(abs(C_1-C)))>0.05 and stp < n_stp):
+            A_1 = A.copy()
+            B_1 = B.copy()
+            C_1 = C.copy()
+            if config.D_u == True:
+                D = update_D(gamma,A,B,C)
+            if config.C_u == True:
                 for j in range(J):
-                    C[:,j]=update_C(j,gamma,A,B,C,D,mu_2)
-            for l in range(n_area*(J+1)):
-                n=random.randint(0,n_area*(J+1)-1)
-                i=n % n_area
-                if config.A_u==True:
-                    if n/n_area==0:
-                        A[:,i]=update_A(i,gamma,A,B,C,D,mu)
-                if config.B_u==True:
-                    if n/n_area>0:
-                        B[:,i,n/n_area-1]=update_B(i,n/n_area-1,gamma,A,B,C,D,mu_1)
+                    C[:,j] = update_C(j,gamma,A,B,C,D,mu_2)
+            for _ in range(n_area*(J+1)):
+                n = random.randint(0,n_area*(J+1)-1)
+                i = n % n_area
+                if config.A_u == True:
+                    if n/n_area == 0:
+                        A[:,i] = update_A(i,gamma,A,B,C,D,mu)
+                if config.B_u == True:
+                    if n/n_area > 0:
+                        B[:,i,n/n_area-1] = update_B(i,n/n_area-1,gamma,A,B,C,D,mu_1)
+                    if init and saved:
+                        B[:, i, n/n_area-1] *= B_init
+
             stp += 1 
         sum_e = sum_e_1
         sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, mu_1, mu_2, lam_1, p_t=True)[1]
@@ -269,7 +294,10 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         config.plt = plt 
         config.plt_1 = plt_1
         config.t_i = configpara.t_i
-        pickle_file_1 = file_name_dir + 'results/result.pkl'
+        if init and not saved:
+            pickle_file_1 = file_name_dir + 'init/results/result.pkl'
+        else:
+            pickle_file_1 = file_name_dir + 'results/result.pkl'
         f = open(pickle_file_1, 'wb')
         save = {
         'estimated_x': np.dot(config.gamma,configpara.Q2_all),
@@ -289,7 +317,10 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         f.close()
         return
     else:
-        pickle_file_1 = pickle_file + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1) + '_' + str_1(mu_2) + '_' + str_1(lam_1) + '.pickle'
+        if init and not saved:
+            pickle_file_1 = file_name_dir + 'init/para/' + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1) + '_' + str_1(mu_2) + '_' + str_1(lam_1) + '.pickle
+        else:
+            pickle_file_1 = pickle_file + str_1(lam) + '_' + str_1(mu) + '_' + str_1(mu_1) + '_' + str_1(mu_2) + '_' + str_1(lam_1) + '.pickle'
         f = open(pickle_file_1, 'wb')
         save = {
         'result': [lamu,gamma,A,B,C,D,e1,e2,plt,plt_1]
@@ -303,14 +334,14 @@ def str_2(num):
     else:
         return float(num)
     
-def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_dir, val_data_dir=None, val_precomp_dir=None, num_cores=1, tol=1e-2, max_iter=100):
+def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_dir, val_data_dir=None, val_precomp_dir=None, num_cores=1, tol=1e-2, max_iter=100, init=False, saved=False):
     """
     wrapper for selecting the tuning parameters of one subject
     See function update_p for details of variables meaning
 
     Parameters
     -----------
-    num_cores : int, allow multi-processing, default None
+    num_cores : int, allow multi-processing, default 1 
 
     Returns
     -----------
@@ -328,13 +359,13 @@ def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_
         if num_cores > 1:
             pool = mp.Pool(processes=min(len(para), num_cores))
             print('begin multiprocessing with {0} cores'.format(num_cores))
-            update_p_1 = partial(update_p, file_name_dir, precomp_dir, pickle_file, tol, max_iter, True)
+            update_p_1 = partial(update_p, file_name_dir, precomp_dir, pickle_file, tol, max_iter, True, init, saved)
             pool.map(update_p_1,para)
             pool.close()
             pool.join()
         else:
             for i in range(len(para)):
-                update_p(file_name_dir, precomp_dir, pickle_file, tol, max_iter, True, para[i])
+                update_p(file_name_dir, precomp_dir, pickle_file, tol, max_iter, True, init, saved, para[i])
     results = list()
     file_config = glob.glob(pickle_file+'*.pickle')
     for i in range(len(file_config)):
@@ -344,7 +375,10 @@ def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_
         else:
             save = pkl.load(f, encoding='latin1')
         results.append(save['result'])
-    pickle_file_1 = file_name_dir + 'results/result.pkl'
+    if init and not saved:
+        pickle_file_1 = file_name_dir + 'init/results/result.pkl'
+    else:
+        pickle_file_1 = file_name_dir + 'results/result.pkl'
     config = Modelconfig(file_name_dir+'data/observed.pkl')
 
     
