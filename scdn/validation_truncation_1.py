@@ -13,7 +13,6 @@ def cross_validation(y, configpara, results):
     Q4_1 = configpara.Q4_all 
     n_area = y.shape[0]
     l_t_all = configpara.l_t_all
-    t_i = configpara.t_i
     J = configpara.J 
     l_t_0 = configpara.row_n
     l_t_1 = configpara.l_t_1 
