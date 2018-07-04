@@ -4,7 +4,7 @@ readme = open('README.md').read()
 
 setup(
     name="scdn",
-    version="0.0.0",
+    version="0.0.1",
     description="Estimating high dimensional ODE models from convoluted observations with an application to fMRI",
     author="Xuefei Cao, Xi Luo, Bjorn Sandstede",
     author_email="xcstf01@gmail.com",

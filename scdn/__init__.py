@@ -5,4 +5,4 @@ Main function: scdn_analysis
 """
 from scdn.scdn_analysis import *
 from scdn.evaluation import eva
-__all__ = ['scdn_analysis', 'eva']
+__all__ = ['scdn_multi_sub', 'eva']

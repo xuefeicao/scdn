@@ -3,7 +3,7 @@ An example with 100 subjects fMRI signals with same stimuli. Date was generated 
 Data are included in the folder data/
 """
 import sys
-sys.path.append('../..')
+#sys.path.append('../..')
 #import scdn 
 from scdn.scdn_analysis import scdn_multi_sub
 from scdn.evaluation import eva 

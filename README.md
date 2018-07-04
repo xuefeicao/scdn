@@ -36,7 +36,8 @@ If you experience problems related to installing the dependency Matplotlib on OS
 ### Intro to our package
 After installing our package locally, try to import scdn in your python environment and learn about package's function. 
 ```
-
+from scdn.scdn_analysis import scdn_multi_sub
+help(scdn_multi_sub)
 ```
 
 

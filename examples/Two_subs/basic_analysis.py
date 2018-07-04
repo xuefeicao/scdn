@@ -4,7 +4,7 @@ In our paper, we do 50 subjects. Here, to illustrate how to use our package, we 
 Data are included in the folder data/
 """
 import sys
-sys.path.append('../..')
+#sys.path.append('../..')
 #import scdn 
 from scdn.scdn_analysis import scdn_multi_sub
 from scdn.evaluation import eva 
