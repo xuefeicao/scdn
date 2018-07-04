@@ -92,15 +92,15 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     Parameters
     ------------
     y_name: file name of fMRI BOLD signal with string format
-            We require the column of the file is the space dimension while row is the time dimension
+            We require the column of the file is the space dimension while the row is the time dimension
     
     u_name: folder name of fMRI stimuli which includes only stimuli file indexed from *.ev0 to *.ev(J-1) where J is the number of stimuli
-            first column is the starting time of events, second column is the duration    
+            the first column is the starting time of events, the second column is the duration    
     file_name: list of two strings (the file name we use to save our observed data and precomputed data)
     dt: TR of fMRI signal
-    N: number of basis - 1
+    N: number of bases - 1
     fold: scalar (integral evaluation stepsize = fold*dt)
-    precomp: bool (Whether to do precomputation for this subject). This variable is only useful when we do multi-subjects computation. 
+    precomp: bool (Whether to do precomputation for this subject). This variable is only useful when we do the multi-subjects computation. 
     h_fun: python function, y = x*h_fun, suppose h_fun is known. Default None and CanonicalHRF will be used in this case.
     t_h: the length of the support (non-zero region) of h_fun, h_fun can be regarded as a smoothing function near every time point, so the nonzero region should 
          not be too large compared to the length of data 
