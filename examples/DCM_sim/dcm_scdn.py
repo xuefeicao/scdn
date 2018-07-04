@@ -1,5 +1,5 @@
 """
-An example with 100 subjects fMRI signals with same stimuli. Date was generated from DCM model.
+An example with 100 subjects fMRI signals with same stimuli.  was generated from DCM model.
 Data are included in the folder data/
 """
 import sys
