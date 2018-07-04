@@ -39,7 +39,7 @@ def fd_0(A1,A):
 
 def fd_1(A1,A):
     """
-    compute AUC of estimated A if real A is known, used for simulated data
+    compute AUC of estimated A if real A is known, used for simulated data, based on number of nonzero trials of one entry. 
 
     Parameters
     ----------
@@ -56,16 +56,23 @@ def fd_1(A1,A):
         return -1
     if len(A1.shape)==2 and np.sum(abs(A1)>0)==(A1.shape[0]*A1.shape[1]):
         return -1
-    if len(A.shape)==3:
-        tmp=abs(np.mean(A,axis=2))
-        
-    else:
-        tmp=abs(np.mean(A,axis=3))
-    if np.max(tmp)==0:
-        tmp=tmp
-    else:
-        tmp=tmp/np.max(tmp)
+    n=A.shape[-1]
+    m1=A.shape[0]
+    m2=A.shape[1]
     A1=(abs(A1)>0)
+    A=abs(A)
+    if len(A.shape)==3:
+        tmp=np.zeros((m1,m2))
+        for i in range(m1):
+            for j in range(m2):
+                tmp[i,j]=sum(abs(A[i,j,:])>0)
+    else:
+        tmp=np.zeros((m1,m2,A.shape[2]))
+        for i in range(m1):
+            for j in range(m2):
+                for k in range(A.shape[2]):
+                    tmp[i,j,k]=sum(abs(A[i,j,k,:])>0)
+    tmp=1.0*tmp/n
     sr=roc_auc_score(A1.reshape((-1)),tmp.reshape((-1)))
     return sr
 
@@ -106,16 +113,18 @@ def eva(folder_name, real_parameters=None, num_iterations=10000, alpha=0.1):
         A_real = save['A_real']
         B_real = save['B_real']
         C_real = save['C_real']
-        if A_all.shape[-1] <= 10:
-            auc_a = fd_0(A_real, A_all)
-            auc_b = fd_0(B_real, B_all)
-            auc_c = fd_0(C_real, C_all)
-        else:
-            auc_a = fd_1(A_real, A_all)
-            auc_b = fd_1(B_real, B_all)
-            auc_c = fd_1(C_real, C_all)
 
+        auc_a = fd_0(A_real, A_all)
+        auc_b = fd_0(B_real, B_all)
+        auc_c = fd_0(C_real, C_all)
         print('AUC(A):{0}, AUC(B):{1}, AUC(C):{2}'.format(auc_a, auc_b, auc_c))
+        
+        auc_a = fd_1(A_real, A_all)
+        auc_b = fd_1(B_real, B_all)
+        auc_c = fd_1(C_real, C_all)
+        print('AUC(A):{0}, AUC(B):{1}, AUC(C):{2}'.format(auc_a, auc_b, auc_c))
+
+
     
 
 

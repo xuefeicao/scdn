@@ -3,9 +3,8 @@ scdn is a Python-based package implementing sparse causal dynamic network analys
 
 
 ## Getting Started
-This package supports both python 2.7 and python 3.6.
 
-Example provided in the repo has been tested in Mac os and Linux environment. 
+Example provided in the repo has been tested in Mac os and Linux environment. This package supports both Python 2.7 and Python 3.6. 
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
@@ -43,7 +42,8 @@ After installing our package locally, try to import scdn in your python environm
 
 ### Examples
 ```
-The examples subfolder includes a basic analysis of our sample data.
+The examples subfolder includes two examples.
+The first is a simulation generated from our data and another is from DCM.
 ```
 
 ## Running the tests
@@ -55,8 +55,9 @@ The test is going to be added in the future.
 * Python 2.7
 
 ## Compatibility
-* python 2.7
-* python 3.6 
+* Python 2.7
+* Python 3.6 
+
 
 ## Authors
 

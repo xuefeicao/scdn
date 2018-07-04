@@ -3,6 +3,6 @@ This package implements sparse causal dynamic network analysis for convolution m
 
 Main function: scdn_analysis
 """
-from scdn_analysis import *
-from evaluation import eva
+from scdn.scdn_analysis import *
+from scdn.evaluation import eva
 __all__ = ['scdn_analysis', 'eva']

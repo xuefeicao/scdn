@@ -180,7 +180,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
             plt_1 += np.dot(np.dot(gamma[i,:],Omega),gamma[i,:])
         
         sum_e = e1 + lam*e2 + lam*mu*plt1+ lam*mu_1*plt2 + lam*mu_2*plt3 + lam_1*plt_1
-        plt = plt1 + mu_1*1.0/mu*plt2 + mu_2*1.0*plt3
+        plt = plt1 + mu_1*1.0/mu*plt2 + mu_2*1.0/mu*plt3
         if p_t == True:
             #print(e1,e2,plt)
             return(e1,e2,plt,plt_1)
@@ -217,7 +217,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
     mu_1 = lamu[2]*mu
     mu_2 = lamu[3]*mu 
     lam_1 = lamu[4]
-    A = np.zeros((n_area,n_area))
+    A = -np.eye(n_area)
     B = np.zeros((n_area,n_area,J))
     C = np.zeros((n_area,J))
     D = np.zeros((n_area,1))
@@ -266,13 +266,13 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, ini
                 n = random.randint(0,n_area*(J+1)-1)
                 i = n % n_area
                 if config.A_u == True:
-                    if n/n_area == 0:
+                    if int(n/n_area) == 0:
                         A[:,i] = update_A(i,gamma,A,B,C,D,mu)
                 if config.B_u == True:
-                    if n/n_area > 0:
-                        B[:,i,n/n_area-1] = update_B(i,n/n_area-1,gamma,A,B,C,D,mu_1)
-                    if init and saved:
-                        B[:, i, n/n_area-1] *= B_init[:,i]
+                    if int(n/n_area) > 0:
+                        B[:,i,int(n/n_area)-1] = update_B(i,int(n/n_area)-1,gamma,A,B,C,D,mu_1)
+                        if init and saved:
+                            B[:, i, int(n/n_area)-1] *= B_init[:,i]
 
             stp += 1 
         sum_e = sum_e_1
@@ -403,10 +403,10 @@ def select_lamu(lam, mu, mu_1, mu_2, lam_1, file_name_dir, pickle_file, precomp_
     else:
         ind = 0
 
-    print('haha', ind)
+
     config.t_i = configpara.t_i
     config.lamu = results[ind][0]
-    print(config.lamu) 
+ 
     config.A = results[ind][2]
     config.B = results[ind][3]
     config.C = results[ind][4]
