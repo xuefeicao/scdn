@@ -31,16 +31,16 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
         for each folder_name
         / data: save all data files
         / init:
-        / para: save results for tuning
-        / results: save all results with pictures
+        /int/ para: save results for tuning
+        /int/ results: save all results with pictures
         / para: save results for tuning
         / results: save all results with pictures
         
         
-        data_file: list of files name, BOLD signal for corresponding subject
-        stimuli_folder: list of stimuli foders for all subject
+        data_file: list of files name, the BOLD signal for the corresponding subject
+        stimuli_folder: list of stimuli folders for all subject
         if the subjects share the same stimuli, let every entry of stimuli_folder be the same
-        val_pair: tuple of indices which are used to do cross validation, for example, (0,1) means we will select
+        val_pair: tuple of indices which are used to do cross-validation, for example, (0,1) means we will select
         data_file[0] to compute the different estimations for all tuning parameters and based on data_file[1] to select
         tuning parameters.
         dt: TR of fMRI data
@@ -58,11 +58,11 @@ def scdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu
         num_cores: int, number of cores for parallel computing
         B_u, C_u: whether to update B and C in the estimations, bool variables
         plot_r: indicates whether to plot estimated signals, bool variables
-        init: boolean variable, indicates whether to use two-step method
+        init: boolean variable, indicates whether to use the two-step method
         h_fun: the function in y = x*h_fun + epsilon
         Returns
         ----------
-        None, results saved in folder
+        None, results saved in the folder
         """
     n1, n2, n3 = len(folder_name), len(data_file), len(stimuli_folder)
     if len(set([n1,n2,n3])) != 1:
