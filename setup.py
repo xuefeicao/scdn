@@ -7,7 +7,6 @@ setup(
     version="0.0.2",
     description="Estimating high dimensional ODE models from convoluted observations with an application to fMRI",
     author="Xuefei Cao, Xi Luo, Bjorn Sandstede",
-    author_email="xcstf01@gmail.com",
     packages=['scdn'],
     long_description=readme,
     long_description_content_type='text/markdown',
