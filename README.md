@@ -63,8 +63,8 @@ The test is going to be added in the future.
 ## Authors
 
 * **Xuefei Cao** - *Maintainer* - (https://github.com/xuefeicao)
-* **Xi Luo** (http://bigcomplexdata.com/)
 * **Björn Sandstede** (http://www.dam.brown.edu/people/sandsted/)
+* **Xi Luo** (http://bigcomplexdata.com/)
 
 
 ## License

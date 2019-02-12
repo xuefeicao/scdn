@@ -6,7 +6,7 @@ setup(
     name="scdn",
     version="0.0.2",
     description="Estimating high dimensional ODE models from convoluted observations with an application to fMRI",
-    author="Xuefei Cao, Xi Luo, Bjorn Sandstede",
+    author="Xuefei Cao, Bjorn Sandstede, Xi Luo",
     packages=['scdn'],
     long_description=readme,
     long_description_content_type='text/markdown',
